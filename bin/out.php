@@ -18,6 +18,9 @@ $arr = glob($path_media . '/*', GLOB_MARK | GLOB_NOSORT);
 natsort($arr);
 $arr = array_reverse($arr);
 
+
+$all = [];
+$count = 0;
 foreach ($arr as $key => $value) {
 	$arr_json = glob($value . '*.json', GLOB_NOSORT);
 	natsort($arr_json);
@@ -33,6 +36,9 @@ foreach ($arr as $key => $value) {
 
 		$cont['thumd'] = base64_encode($imagehost . base64_decode($cont['thumd']));
 		$all[] = $cont;
+		if (++$count >= 500) {
+			break 2;
+		}
 	}
 }
 
