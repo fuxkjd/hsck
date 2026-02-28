@@ -1,0 +1,43 @@
+name: update all json
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "30 10,22 * * *"
+
+jobs:
+  update:
+    runs-on: ubuntu-22.04
+
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Run bin.php && git push
+        env:
+          WXPUSHER_APPTOKEN: ${{ secrets.WXPUSHER_APPTOKEN }}
+        run: |
+          cd ./bin && php bin.php
+          cd ..
+          pwd
+          echo 1
+          git diff --exit-code || {
+            echo 2
+            git config user.name "github-actions"
+            echo 3
+            git config user.email "actions@github.com"
+            echo 4
+            git checkout --orphan latest_branch
+            echo 5
+            git add -A
+            echo 6
+            git commit -am "Update all.json"
+            echo 7
+            git branch -D main
+            echo 8
+            git branch -m main
+            echo 9
+            git push -f origin main
+          }
