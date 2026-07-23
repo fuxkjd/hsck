@@ -61,16 +61,22 @@ class HostChecker:
             return True
 
         if "strU=" in html and soup.find(id="hao123"):
-            match = re.search(r'strU="(https?://[a-zA-Z0-9:/.]+\?u=?)"', html)
-            if match:
+            match = re.search(r'strU="(https?://[^"]+)"', html)
+            if match and match.end() < len(html) and html[match.end()] == "+":
                 redirect_url = f"{match.group(1)}{host}/&p=/"
                 logger.debug(f"检测到跳转: {redirect_url}")
                 response = self.client.head(redirect_url)
                 location = response.headers.get("Location")
                 if location:
-                    loc_match = re.match(r"(http://[a-zA-Z0-9]+\.[a-zA-Z0-9]+)", location)
+                    loc_match = re.match(r"(https?://[a-zA-Z0-9]+\.[a-zA-Z0-9]+(:\d+)?)", location)
                     if loc_match:
                         return loc_match.group(1)
+                    else:
+                        logger.debug(f"Location 格式不匹配: {location}")
+                else:
+                    logger.debug(f"响应头中无 Location: status={response.status_code}")
+            else:
+                logger.debug("strU 格式不匹配或非 JS 拼接跳转")
 
         if "滑动验证" in html:
             script_tag = soup.find("script", src=re.compile(r"/huadong.*js\?id="))
@@ -94,6 +100,7 @@ class HostChecker:
         elif isinstance(result, str):
             return self._check_single_host(result)
         else:
+            logger.debug(f"主机 {host} 响应内容:\n{html}")
             logger.error(f"主机 {host} 不可用")
             return False
 
@@ -102,4 +109,8 @@ class HostChecker:
         if saved_host and self._check_single_host(saved_host):
             return True
 
-        return self._check_single_host("http://hsck.us")
+        fallback_host = "http://hsck.us"
+        if saved_host == fallback_host:
+            return False
+
+        return self._check_single_host(fallback_host)
