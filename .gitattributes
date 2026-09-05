@@ -1,0 +1,33 @@
+# Auto detect text files and perform LF normalization
+* text=auto eol=lf
+
+# Scripts
+*.sh text eol=lf
+*.bat text eol=crlf
+
+# Python
+*.py text eol=lf
+*.pyi text eol=lf
+
+# Config
+*.toml text eol=lf
+*.yaml text eol=lf
+*.yml text eol=lf
+*.json text eol=lf
+.env text eol=lf
+.env.example text eol=lf
+.python-version text eol=lf
+
+# Documentation
+*.md text eol=lf
+*.txt text eol=crlf
+
+# Media playlists
+*.m3u text eol=crlf
+
+# Git
+.gitignore text eol=lf
+.gitattributes text eol=lf
+
+# Lock file (generated, keep lf)
+uv.lock text eol=lf
