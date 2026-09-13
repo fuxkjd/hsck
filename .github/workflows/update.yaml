@@ -1,0 +1,57 @@
+name: hsck data collection
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "30 10,22 * * *"
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    env:
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v8.2.0
+        with:
+          enable-cache: true
+
+      - name: Set up Python
+        run: uv python install 3.12
+
+      - name: Install dependencies
+        run: uv sync
+
+      - name: Run hsck
+        env:
+          WXPUSHER_APPTOKEN: ${{ secrets.WXPUSHER_APPTOKEN }}
+        run: uv run python -m hsck
+
+      - name: Check for changes
+        id: git_status
+        run: |
+          if git status --porcelain dist/ config.json media/ | grep -q .; then
+            echo "changed=true" >> $GITHUB_OUTPUT
+          else
+            echo "changed=false" >> $GITHUB_OUTPUT
+            echo "No changes to commit"
+          fi
+
+      - name: Commit and push
+        if: steps.git_status.outputs.changed == 'true'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "actions@github.com"
+          git add dist/ config.json media/
+          MSG="Update $(date +'%Y-%m-%d %H-%M-%S')"
+          git reset --soft $(git commit-tree $(git write-tree) -m "$MSG")
+          git push --force-with-lease
