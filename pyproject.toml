@@ -1,0 +1,60 @@
+[project]
+name = "hsck"
+version = "0.2.0"
+description = "海阔小程序 hsck 离线数据源采集工具"
+requires-python = ">=3.12"
+dependencies = [
+    "beautifulsoup4>=4.14.3",
+    "httpx>=0.28.1",
+    "lxml>=6.1.1",
+    "python-dotenv>=1.2.2",
+]
+
+[dependency-groups]
+dev = [
+    "ruff>=0.16.8",
+    "ty>=0.0.81",
+]
+
+[project.scripts]
+hsck = "hsck.app:main"
+check = "hsck._check:main"
+
+[build-system]
+requires = ["uv_build>=0.12.13,<0.13.0"]
+build-backend = "uv_build"
+
+[tool.uv.build-backend]
+module-name = "hsck"
+module-root = "src"
+
+[tool.ty.environment]
+python = ".venv"
+
+[tool.ruff]
+target-version = "py312"
+line-length = 100
+
+[tool.ruff.lint]
+select = [
+    "E", "W", "F", # 标准
+    "I", # 导入
+    "UP", "RUF", # 代码现代化
+    "B", "BLE", "T10", # Bug
+    "SIM", "C4", "PERF", "PIE", # 简化与性能
+    "N", # 命名
+    "PTH", # 路径
+    # "ASYNC", # 异步（如项目用 asyncio 则保留，否则删掉）
+    "PT", # 测试
+    "TRY", # 异常
+]
+ignore = [
+    "E501",   # 忽略超长行 (交给 ruff format 自动处理)
+    "TRY003", # 允许在 raise Exception(...) 中写长文字说明
+    "RUF012", # 允许在类定义中定义可变对象属性 (非常适合 YAML/JSON 配置类)
+]
+
+[tool.ruff.format]
+indent-style = "space"
+quote-style = "double"
+docstring-code-format = true
